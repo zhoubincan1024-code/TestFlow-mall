@@ -1,0 +1,27 @@
+# 被测系统源码（独立开源仓库，不纳入测试仓库）
+mall/
+mall-admin-web/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 测试运行时产物
+api-test/logs/
+api-test/allure-results/
+api-test/.pytest_cache/
+ui-test/logs/
+ui-test/screenshots/
+ui-test/.pytest_cache/
+reports/
+
+# 性能测试产物
+performance-test/results.jtl
+performance-test/report/
+performance-test/jmeter.log
+
+# 本地工具目录
+tools/
+.local/
