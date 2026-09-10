@@ -69,8 +69,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y mysql-client-core-8.0
-          # mall.sql 为全量初始化脚本（含建库/建表/种子数据），与本地环境同版本
-          mysql -h 127.0.0.1 -P 3306 -u mall -pmall123456 < mall/document/sql/mall.sql
+          # mall.sql 为全量初始化脚本（Navicat 导出，无 USE 语句），须显式指定目标库 mall
+          mysql -h 127.0.0.1 -P 3306 -u mall -pmall123456 mall < mall/document/sql/mall.sql
           mysql -h 127.0.0.1 -P 3306 -u mall -pmall123456 -e "SELECT COUNT(*) AS products FROM mall.pms_product WHERE delete_status=0"
 
       - name: 设置 Python 3.12
