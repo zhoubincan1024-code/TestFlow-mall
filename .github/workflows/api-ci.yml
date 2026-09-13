@@ -81,7 +81,7 @@ jobs:
       - name: 构建 mall-admin
         run: |
           cd mall
-          mvn -B -q -pl mall-admin -am package -DskipTests
+          mvn -B -q -pl mall-admin -am package -DskipTests -Ddocker.skip=true
 
       - name: 启动 mall-admin 后端
         run: |
