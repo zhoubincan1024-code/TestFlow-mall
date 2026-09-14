@@ -24,11 +24,13 @@ def get_logger(name: str = "api-test") -> logging.Logger:
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter(_FORMAT, datefmt=_DATEFMT)
 
+    # 控制台
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
     console.setFormatter(formatter)
     logger.addHandler(console)
 
+    # 文件（滚动）
     os.makedirs(LOG_DIR, exist_ok=True)
     file_handler = RotatingFileHandler(
         LOG_FILE, maxBytes=1024 * 1024, backupCount=5, encoding="utf-8"

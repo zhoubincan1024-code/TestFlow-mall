@@ -24,7 +24,8 @@ def test_product_list_search_by_name(authed_client):
 
 
 def test_product_list_filter_by_category(authed_client):
-    """按分类筛选（取一级分类真实 ID）"""
+    """按分类筛选（手机数码一级分类，parentId=0 返回真实分类 ID）"""
+    # 取一级分类列表拿到真实分类 ID
     cates = product_api.list_product_categories(authed_client, parent_id=0)
     cate_list = cates.get("data", {}).get("list", [])
     target = next((c for c in cate_list if "手机" in (c.get("name") or "")), None)

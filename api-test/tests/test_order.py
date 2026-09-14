@@ -25,6 +25,7 @@ def test_order_list_search_by_order_sn(authed_client):
 
 def test_order_list_filter_by_status(authed_client):
     """按订单状态筛选（状态码来自订单列表实际值）"""
+    # 先取第一页，用真实状态值做筛选，保证用例与数据联动
     first = order_api.list_orders(authed_client, page_num=1, page_size=10)
     first_items = first.get("data", {}).get("list", [])
     assert first_items, "订单数据不应为空"

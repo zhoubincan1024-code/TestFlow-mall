@@ -42,6 +42,7 @@ class ApiClient:
         resp = self.session.request(method, url, **kwargs)
         cost_ms = round((time.time() - start) * 1000)
 
+        # 响应摘要：JSON 截断到 200 字符
         try:
             summary = resp.text[:200]
         except Exception:

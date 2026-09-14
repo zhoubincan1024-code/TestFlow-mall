@@ -25,3 +25,7 @@ performance-test/jmeter.log
 # 本地工具目录
 tools/
 .local/
+
+# 根目录运行产物
+jmeter.log
+部署验证-后台首页.png

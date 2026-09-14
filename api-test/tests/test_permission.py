@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 权限模块接口测试：后台用户、角色、菜单树、资源点 + RBAC 越权边界
-- admin/test 为超级管理员（role 5），拥有全部资源点
+- admin/test 为超级管理员（role 5），拥有全部 30 个资源点
 - productAdmin 仅商品资源、orderAdmin 仅订单资源（RBAC 隔离验证）
 """
 import config
@@ -69,6 +69,8 @@ def test_resource_list(authed_client):
     assert "/product/**" in urls and "/order/**" in urls, "资源应含商品/订单权限点"
     assert "/coupon/**" in urls and "/admin/**" in urls, "资源应含营销/权限权限点"
 
+
+# ---------- RBAC 越权边界 ----------
 
 def test_super_admin_full_access(authed_client):
     """超级管理员可访问商品/订单/营销/权限四类接口"""

@@ -11,11 +11,13 @@ import config
 from api import auth_api
 from utils.http_client import parse_json
 
+# 正常登录参数化：账号、密码、期望用户名
 SUCCESS_CASES = [
     pytest.param(config.ADMIN_USERNAME, config.ADMIN_PASSWORD, "admin", id="admin-login"),
     pytest.param(config.TEST_USERNAME, config.TEST_PASSWORD, "test", id="test-login"),
 ]
 
+# 登录失败参数化：账号、密码、期望业务码
 FAIL_CASES = [
     pytest.param("admin", "123456", 500, id="wrong-password"),
     pytest.param("nouser", "123456", 404, id="not-exist-user"),

@@ -6,8 +6,8 @@ Pytest 全局 fixtures：
 - authed_client：携带 admin token 的客户端
 
 Allure 增强（零侵入）：
-pytest_collection_modifyitems 按测试模块自动设置 epic/feature/story 与中文标题，
-41 条用例无需逐个添加装饰器即可在 Allure 报告中呈现模块化结构。
+- pytest_collection_modifyitems 按测试模块自动设置 epic/feature/story 与中文标题，
+  41 条用例无需逐个添加装饰器即可在 Allure 报告中呈现模块化结构。
 """
 import allure
 import pytest
@@ -19,6 +19,7 @@ from utils.logger import get_logger
 
 logger = get_logger("conftest")
 
+# 模块 → (epic, feature) 映射（覆盖测试计划 S1-S6 范围）
 MODULE_MAP = {
     "test_login": ("接口测试", "登录与认证"),
     "test_auth": ("接口测试", "鉴权与权限"),
@@ -39,8 +40,10 @@ def pytest_collection_modifyitems(items):
             allure.dynamic.epic(epic)
             allure.dynamic.feature(feature)
             allure.dynamic.story(feature)
+        # 标题：test_xxx_yyy → xxx yyy（保持函数名可读，不重写断言逻辑）
         name = item.name.replace("test_", "").replace("_", " ")
         allure.dynamic.title(name)
+
 
 
 @pytest.fixture(scope="session")
@@ -74,6 +77,7 @@ def authed_client(client: ApiClient, admin_token: str) -> ApiClient:
 
 
 def _login_token(client: ApiClient, username: str, password: str, label: str) -> str:
+    """通用：登录并返回 token"""
     body = auth_api.login(client, username, password)
     assert body.get("code") == 200, f"{label} 登录失败: {body}"
     token = body.get("data", {}).get("token")

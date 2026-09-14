@@ -7,7 +7,7 @@
 ```text
 api-test/
 ├── config.py            # 环境配置（BASE_URL、登录账号、数据库）
-├── conftest.py          # Pytest fixtures（session、token、RBAC 账号）+ Allure 自动装饰
+├── conftest.py          # Pytest fixtures（session、token、RBAC 账号）
 ├── pytest.ini           # Pytest 配置
 ├── requirements.txt     # 依赖
 ├── api/                 # 接口对象封装（auth / product / order / market / perm）
@@ -32,7 +32,7 @@ pytest --html=../reports/api_test_report.html   # 生成 HTML 报告
 | 机制 | 实现 |
 |---|---|
 | Token 关联 | `conftest.py` 中 `admin_token` fixture（session 级）登录 admin/macro123 获取 token，`authed_client` 自动携带 |
-| 请求封装 | `utils/http_client.py` 统一组装 URL/请求头/超时，并记录每次请求日志 |
+| 请求封装 | `utils/http_client.py` 统一组装 URL/请求头/超时，并记录每次请求日志（方法、路径、状态码、耗时、响应摘要） |
 | 日志 | `utils/logger.py` 控制台 INFO + 文件 DEBUG（logs/api_test.log，1MB 滚动保留 5 份） |
 | 参数化 | 登录成功/失败用例使用 `@pytest.mark.parametrize` 数据驱动 |
 | 数据库一致性 | `utils/db.py`（PyMySQL）统计表行数并与接口分页 total 交叉断言；列表接口过滤逻辑删除（delete_status=0） |
@@ -64,9 +64,14 @@ pytest --html=../reports/api_test_report.html   # 生成 HTML 报告
 ```bash
 cd api-test
 pip install -r requirements.txt
+
+# 1. 运行用例并收集结果（conftest 自动按模块设置 epic/feature/story 与中文标题）
 python -m pytest --alluredir=allure-results --clean-alluredir -q
-# 生成静态报告（Windows 已下载 allure CLI）
+
+# 2. 用 Allure CLI 生成静态报告（Windows 已下载至 C:\Users\zhoub\tools\allure-2.30.0）
 & "C:\Users\zhoub\tools\allure-2.30.0\bin\allure.bat" generate allure-results -o reports\allure-report --clean
+
+# 3. 查看：浏览器打开 reports\allure-report\index.html
 ```
 
 Allure 报告特性：按模块（登录/商品/订单/营销/权限/数据库一致性）分层的 epic → feature 结构，无需修改任何用例文件（由 `conftest.py` 的 `pytest_collection_modifyitems` 自动装饰）。
@@ -75,5 +80,15 @@ Allure 报告特性：按模块（登录/商品/订单/营销/权限/数据库�
 
 - Workflow：`.github/workflows/api-ci.yml`
 - 触发：`api-test/**` 或 workflow 变更 push / PR；支持 `workflow_dispatch` 手动触发
-- 流程：起 MySQL 8 / Redis 7 容器 → 检出被测系统 mall（**锁定 commit `0504e86b`**）→ 导入 `mall.sql` 种子数据 → 构建并启动 mall-admin → 执行 41 条用例（含数据库一致性断言）→ Allure 报告上传为 artifact
-- 关键点：种子数据已验证与本地基线一致；后端启动用命令行参数覆盖 `spring.datasource.*`（JDBC URL 加 `allowPublicKeyRetrieval=true`）；JDK 17 + Maven 依赖缓存
+- 流程：起 MySQL 8 / Redis 7 容器 → 检出被测系统 mall（**锁定 commit `0504e86b`**，与本地环境同版本）→ 导入 `mall.sql` 种子数据 → 构建并启动 mall-admin → 执行 41 条用例（含数据库一致性断言）→ Allure 报告上传为 artifact
+- 关键点：
+  - 种子数据已验证与本地基线一致（pms_product 38 行 / 接口 20 条，oms_order 65 行 / 接口 48 条），CI 全新初始化后断言成立；
+  - 后端启动用命令行参数覆盖 `spring.datasource.*` 指向 CI 的 MySQL 服务（JDBC URL 加 `allowPublicKeyRetrieval=true`，规避 MySQL 8 公钥检索问题）；
+  - JDK 17 + Maven 依赖缓存（`actions/setup-java` cache）加速构建。
+
+### 推送到 GitHub 后的首个 CI 跑法
+
+1. 在 GitHub 新建空仓库（如 `TestFlow-mall`），推入本项目（注意：`mall/`、`mall-admin-web/` 是独立源码仓库，建议加入 `.gitignore` 或作为 git submodule 管理）；
+2. Actions 页确认 `API 接口自动化回归` workflow 已出现；
+3. 手动触发 `workflow_dispatch` 跑一次，或推送 `api-test/**` 变更自动触发；
+4. 构建完成后在 Actions 运行页下载 `allure-report` artifact，解压打开 `index.html`。
